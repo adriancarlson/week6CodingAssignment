@@ -1,5 +1,5 @@
 // For the final project you will be creating an automated version of the classic card game WAR.
-// Think about how you would build this project and write your plan down. Consider classes such as Card, Deck, and Player and what fields and methods they might each have. 
+// Think about how you would build this project and write your plan down. Consider classes such as Card, Deck, and Player and what fields and methods they might each have.
 //You can implement the game however you’d like (i.e. printing to the console, using alert, or some other way). The completed project should, when ran, do the following:
 // -	Deal 26 Cards to two Players from a Deck.
 // -	Iterate through the turns where each Player plays a Card
@@ -8,20 +8,54 @@
 // -	After all cards have been played, display the score.
 // Write Unit Tests using Mocha and Chai for each of the functions you write.
 
+//global variables for suits and values
+const suits = ['♠', '♣', '♥', '♦'];
+const values = ['Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King'];
+
+//deck class
+class Deck {
+	constructor(cards = newDeck()) {
+		this.cards = cards;
+	}
+	// had to look up how to shuffle deck. looked at many options. this one was more complicated but seemed to shuffle the cards the most randomly
+	shuffleDeck() {
+		//create a loop to go through cards and flip them with other cards in the array, starting at the back of the deck and taking current card we are on and fliping it with a card we have not got to yet
+		for (let i = this.cards.length - 1; i > 0; i--) {
+			//starting with the last index until we get to the first card
+			const newIndex = Math.floor(Math.random() * (i + 1)); // getting a random index that is earlier in the deck. take random number multiply it by the index + 1, getting an index we have not accessed yet. using flor to make sure it is an integer
+			const oldValue = this.cards[newIndex]; // value at index currently
+			this.cards[newIndex] = this.cards[i]; // take card at i index and put it where our new index is
+			this.cards[i] = oldValue;
+			// the oldvalue is used as an intermediate value because we overwrite new index and we need to have access to it before we override it.
+		}
+	}
+}
+
+//card class 
+class Card {
+	constructor(suit, value) {
+		this.suit = suit;
+		this.value = value;
+	}
+}
+// player class
 class Player {
-	constructor(playerName, playerNumber) {
+	constructor(playerName, playerNumber, playerDeck) {
 		this.playerName = playerName;
 		this.playerNumber = playerNumber;
+		this.playerDeck = playerDeck;
 		this.playerScore = 0;
 	}
 }
-
-class Deck {
-	constructor() {
-		this.deck = [];
-	}
+// generate Deck 
+function newDeck() {
+	return suits.flatMap((suit) => {
+		return values.map((value) => {
+			return new Card(suit, value);
+		});
+	});
 }
-
+//game class
 class Game {
 	constructor() {
 		this.players = [];
@@ -36,7 +70,7 @@ class Game {
 		}
 	}
 }
-
+// menu class 
 class Menu {
 	constructor() {
 		this.currentGame;
@@ -59,92 +93,49 @@ class Menu {
 	showMainMenuOptions() {
 		return prompt(`
 		0) Exit
-		1) Start New Name 
+		1) Start New Name
 		`);
 	}
 
 	showStartMenuOptions(players) {
 		return prompt(`
-		0) Reset 
-		1) Start Game 
+		0) Reset
+		1) Start Game
 		________________
 		Player ${players[0].playerNumber}: ${players[0].playerName}
-		vs. 
+		vs.
 		Player ${players[1].playerNumber}: ${players[1].playerName}
 		`);
 	}
 	showGameMenuOptions(courseInfo) {
 		return prompt(`
-		0) Exit 
-		1) Next Round  
+		0) Exit
+		1) Next Round
 		________________
 		${courseInfo}
 		`);
 	}
 	createGame() {
-		this.currentGame = new Game();
-		let player1 = prompt(`Enter first player name: `);
-		let player2 = prompt(`Enter second player name: `);
-		this.currentGame.players.push(new Player(player1, 1));
-		this.currentGame.players.push(new Player(player2, 2));
+		this.currentGame = new Game(); // create new game
+		const deck = new Deck(); // create new deck
+		deck.shuffleDeck(); // shuffle deck
+		const deckMidPoint = deck.cards.length / 2; // find deck mid point to split between players
+		let player1Deck = new Deck(deck.cards.slice(0, deckMidPoint)); //create a new deck and give first player first half of shuffled deck by splicing first card through mid point
+		let player2Deck = new Deck(deck.cards.slice(deckMidPoint, deck.cards.length)); //create a new deck and give Second player last half of shuffled deck by splicing mid point through end of cards
+		let player1 = prompt(`Enter first player name: `); // prompt for player 1 name
+		let player2 = prompt(`Enter second player name: `); // prompt for player 2 name
+		this.currentGame.players.push(new Player(player1, 1, player1Deck)); // create player one with deck
+		this.currentGame.players.push(new Player(player2, 2, player2Deck)); // create player two with deck
+		console.log(this.currentGame.players[0]);
+		console.log(this.currentGame.players[1]);
 		let startSelection = this.showStartMenuOptions(this.currentGame.players);
-		console.log(startSelection);
+
 		if (startSelection == 1) {
 			this.startGame();
 		}
 	}
 	startGame() {
 		alert('got here');
-	}
-
-	viewCourse() {
-		let index = prompt(`Enter the index of the course you wish to view:`);
-		if (index > -1 && index < this.courses.length) {
-			this.selectedCourse = this.courses[index];
-			let description = 'Course Name: ' + this.selectedCourse.courseName + '\n';
-
-			for (let i = 0; i < this.selectedCourse.students.length; i++) {
-				description += i + ') ' + this.selectedCourse.students[i].firstName + ' ' + this.selectedCourse.students[i].lastName + ' - ' + this.selectedCourse.students[i].gradeLevel + '\n';
-			}
-
-			let selection = this.showCourseMenuOptions(description);
-			switch (selection) {
-				case '1':
-					this.createStudent();
-					break;
-				case '2':
-					this.deleteStudent();
-			}
-		}
-	}
-
-	deleteCourse() {
-		let index = prompt(`Enter the index of the course you wish to remove:`);
-		if (index > -1 && index < this.courses.length) {
-			this.courses.splice(index, 1);
-		}
-	}
-
-	displayCourses() {
-		let courseString = ``;
-		for (let i = 0; i < this.courses.length; i++) {
-			courseString += i + ') ' + this.courses[i].courseName + '\n';
-		}
-		alert(courseString);
-	}
-
-	createStudent() {
-		let firstName = prompt(`Enter student first name: `);
-		let lastName = prompt(`Enter student last name: `);
-		let gradeLevel = prompt(`Enter student grade level: `);
-		this.selectedCourse.students.push(new Student(firstName, lastName, gradeLevel));
-	}
-
-	deleteStudent() {
-		let index = prompt(`Enter the index of the student you wish to remove:`);
-		if (index > -1 && index < this.selectedCourse.students.length) {
-			this.selectedCourse.students.splice(index, 1);
-		}
 	}
 }
 
