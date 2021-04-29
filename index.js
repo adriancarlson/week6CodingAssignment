@@ -10,7 +10,7 @@
 
 //global variables for suits and values
 const suits = ['♠', '♣', '♥', '♦'];
-const values = ['Ace', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King'];
+const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
 //deck class
 class Deck {
@@ -31,7 +31,7 @@ class Deck {
 	}
 }
 
-//card class 
+//card class
 class Card {
 	constructor(suit, value) {
 		this.suit = suit;
@@ -47,7 +47,7 @@ class Player {
 		this.playerScore = 0;
 	}
 }
-// generate Deck 
+// generate Deck
 function newDeck() {
 	return suits.flatMap((suit) => {
 		return values.map((value) => {
@@ -59,18 +59,18 @@ function newDeck() {
 class Game {
 	constructor() {
 		this.players = [];
-		this.round = 0;
+		this.round = 1;
 	}
 
 	addPlayer(player) {
 		if (player instanceof Player) {
 			this.players.push(player);
 		} else {
-			throw new Error(`You can only add an instace of Player. Argumetn is not a Player ${player}`);
+			throw new Error(`You can only add an instace of Player. Argument is not a Player ${player}`);
 		}
 	}
 }
-// menu class 
+// menu class
 class Menu {
 	constructor() {
 		this.currentGame;
@@ -89,6 +89,7 @@ class Menu {
 			selection = this.showMainMenuOptions();
 		}
 		alert(`See ya Later!`);
+		location.reload();
 	}
 	showMainMenuOptions() {
 		return prompt(`
@@ -126,16 +127,43 @@ class Menu {
 		let player2 = prompt(`Enter second player name: `); // prompt for player 2 name
 		this.currentGame.players.push(new Player(player1, 1, player1Deck)); // create player one with deck
 		this.currentGame.players.push(new Player(player2, 2, player2Deck)); // create player two with deck
-		console.log(this.currentGame.players[0]);
-		console.log(this.currentGame.players[1]);
+
 		let startSelection = this.showStartMenuOptions(this.currentGame.players);
 
 		if (startSelection == 1) {
-			this.startGame();
+			this.roundRunner();
 		}
 	}
-	startGame() {
-		alert('got here');
+	roundRunner() {
+		let currentRound = this.currentGame.round++; //incrament round
+		let players = this.currentGame.players;
+		let currentPlayer1Card = this.currentGame.players[0].playerDeck.cards.shift(); // remove first card off of player 1 deck
+		let currentPlayer2Card = this.currentGame.players[1].playerDeck.cards.shift(); // remove first card off of player 2 deck
+
+		let selection = this.showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players);
+		while (selection != 0) {
+			switch (selection) {
+				case '1':
+					this.roundRunner();
+					break;
+				default:
+					selection = 0;
+			}
+			selection = this.showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players);
+		}
+		alert(`See ya Later!`);
+		location.reload();
+	}
+	showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players) {
+		return prompt(`Round ${currentRound}
+
+		${players[0].playerName} Draws: ${currentPlayer1Card.value}${currentPlayer1Card.suit}
+		${players[1].playerName} Draws: ${currentPlayer2Card.value}${currentPlayer2Card.suit}
+
+		---------------------
+		0) Exit
+		1) Next Round
+		`);
 	}
 }
 
