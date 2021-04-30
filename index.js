@@ -36,7 +36,7 @@ class Deck {
 		//create a loop to go through cards and flip them with other cards in the array, starting at the back of the deck and taking current card we are on and fliping it with a card we have not got to yet
 		for (let i = this.cards.length - 1; i > 0; i--) {
 			//starting with the last index until we get to the first card
-			const newIndex = Math.floor(Math.random() * (i + 1)); // getting a random index that is earlier in the deck. take random number multiply it by the index + 1, getting an index we have not accessed yet. using flor to make sure it is an integer
+			const newIndex = Math.floor(Math.random() * (i + 1)); // getting a random index that is earlier in the deck. take random number multiply it by the index + 1, getting an index we have not accessed yet. using floor to make sure it is an integer
 			const oldValue = this.cards[newIndex]; // value at index currently
 			this.cards[newIndex] = this.cards[i]; // take card at i index and put it where our new index is
 			this.cards[i] = oldValue;
@@ -111,7 +111,7 @@ class Menu {
 	showMainMenuOptions() {
 		return prompt(`
 		0) Exit
-		1) Start New Name
+		1) Start New Game
 		`);
 	}
 
@@ -209,6 +209,7 @@ class Menu {
 	}
 	showEndResults(players, gameWinner) {
 		alert(`GAME OVER MAN! GAME OVER!
+
 		${gameWinner} Wins
 
 		Final Score
