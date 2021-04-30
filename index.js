@@ -136,6 +136,7 @@ class Menu {
 	createGame() {
 		this.currentGame = new Game(); // create new game
 		const deck = new Deck(); // create new deck
+		console.log(deck);
 		deck.shuffleDeck(); // shuffle deck
 		const deckMidPoint = deck.cards.length / 2; // find deck mid point to split between players
 		let player1Deck = new Deck(deck.cards.slice(0, deckMidPoint)); //create a new deck and give first player first half of shuffled deck by splicing first card through mid point
