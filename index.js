@@ -11,7 +11,21 @@
 //global variables for suits and values
 const suits = ['♠', '♣', '♥', '♦'];
 const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-
+const cardValueMap = {
+	2: 2,
+	3: 3,
+	4: 4,
+	5: 5,
+	6: 6,
+	7: 7,
+	8: 8,
+	9: 9,
+	10: 10,
+	J: 11,
+	Q: 12,
+	K: 13,
+	A: 14,
+};
 //deck class
 class Deck {
 	constructor(cards = newDeck()) {
@@ -28,6 +42,9 @@ class Deck {
 			this.cards[i] = oldValue;
 			// the oldvalue is used as an intermediate value because we overwrite new index and we need to have access to it before we override it.
 		}
+	}
+	flipCard() {
+		return this.cards.shift();
 	}
 }
 
@@ -135,34 +152,68 @@ class Menu {
 		}
 	}
 	roundRunner() {
-		let currentRound = this.currentGame.round++; //incrament round
-		let players = this.currentGame.players;
-		let currentPlayer1Card = this.currentGame.players[0].playerDeck.cards.shift(); // remove first card off of player 1 deck
-		let currentPlayer2Card = this.currentGame.players[1].playerDeck.cards.shift(); // remove first card off of player 2 deck
-
-		let selection = this.showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players);
-		while (selection != 0) {
-			switch (selection) {
-				case '1':
-					this.roundRunner();
-					break;
-				default:
-					selection = 0;
+		if (this.currentGame.players[0].playerDeck.cards.length > 0 && this.currentGame.players[1].playerDeck.cards.length > 0) {
+			let currentRound = this.currentGame.round++; //incrament round
+			let players = this.currentGame.players;
+			let currentPlayer1Card = this.currentGame.players[0].playerDeck.flipCard(); // remove first card off of player 1 deck
+			let currentPlayer2Card = this.currentGame.players[1].playerDeck.flipCard(); // remove first card off of player 2 deck
+			let p1CardVal = cardValueMap[currentPlayer1Card.value]; // use mapping to get value of Player 1 card
+			let p2CardVal = cardValueMap[currentPlayer2Card.value]; // use mapping to get value of Player 2 card
+			let roundWinner = '';
+			if (p1CardVal > p2CardVal) {
+				this.currentGame.players[0].playerScore++;
+				roundWinner = this.currentGame.players[0].playerName;
+			} else if (p1CardVal < p2CardVal) {
+				this.currentGame.players[1].playerScore++;
+				roundWinner = this.currentGame.players[1].playerName;
+			} else {
+				roundWinner = 'Tie';
 			}
-			selection = this.showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players);
+
+			let selection = this.showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players, roundWinner);
+			while (selection != 0) {
+				switch (selection) {
+					case '1':
+						this.roundRunner();
+						break;
+					default:
+						selection = 0;
+				}
+				selection = this.showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players, roundWinner);
+			}
+			alert(`See ya Later!`);
+			location.reload();
+		} else {
+			let gameWinner;
+			if (this.currentGame.players[0].playerScore > this.currentGame.players[1].playerScore) {
+				gameWinner = this.currentGame.players[0].playerName;
+			} else {
+				gameWinner = this.currentGame.players[1].playerName;
+			}
+			this.showEndResults(this.currentGame.players, gameWinner);
+			window.onClick(location.reload());
 		}
-		alert(`See ya Later!`);
-		location.reload();
 	}
-	showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players) {
+	showRoundOptions(currentRound, currentPlayer1Card, currentPlayer2Card, players, roundWinner) {
 		return prompt(`Round ${currentRound}
+		${players[0].playerName} Draws:  ${currentPlayer1Card.value}${currentPlayer1Card.suit}
+		${players[1].playerName} Draws:  ${currentPlayer2Card.value}${currentPlayer2Card.suit}
+		Round Winner:  ${roundWinner}
 
-		${players[0].playerName} Draws: ${currentPlayer1Card.value}${currentPlayer1Card.suit}
-		${players[1].playerName} Draws: ${currentPlayer2Card.value}${currentPlayer2Card.suit}
-
+		${players[0].playerName} Score:  ${players[0].playerScore}
+		${players[1].playerName} Score:  ${players[1].playerScore}
 		---------------------
 		0) Exit
 		1) Next Round
+		`);
+	}
+	showEndResults(players, gameWinner) {
+		alert(`GAME OVER MAN! GAME OVER!
+		${gameWinner} Wins
+
+		Final Score
+		${players[0].playerName} Score:  ${players[0].playerScore}
+		${players[1].playerName} Score:  ${players[1].playerScore}
 		`);
 	}
 }
